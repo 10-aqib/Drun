@@ -1,0 +1,176 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --drun-bg: #031A16;
+    --drun-emerald: #08231D;
+    --drun-emerald-light: #0D322A;
+    --drun-near-black: #07100E;
+    --drun-charcoal: #101412;
+    --drun-leather: #A56D47;
+    --drun-copper: #D88955;
+    --drun-cta: #FA9D60;
+    --drun-cta-hover: #F28C47;
+    --drun-ivory: #F8F7F3;
+    --drun-cream: #E9E8DF;
+    --drun-secondary: #9EAAA4;
+    --drun-white: #F6F5F0;
+    --drun-border-dark: rgba(246, 245, 240, 0.12);
+    --drun-border-light: rgba(16, 20, 18, 0.08);
+    --font-heading-var: var(--font-heading), var(--font-sans), system-ui, sans-serif;
+    --font-body-var: var(--font-body), system-ui, sans-serif;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--drun-bg);
+    color: var(--drun-white);
+    font-family: var(--font-body), system-ui, sans-serif;
+  }
+
+  body {
+    background-color: var(--drun-bg);
+    color: var(--drun-white);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-family: var(--font-body), system-ui, sans-serif;
+  }
+
+  /* Custom luxury scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #031A16;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #0D322A;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #A56D47;
+  }
+}
+
+/* Luxury Solid Typography Utilities */
+.font-heading,
+.font-serif-luxury {
+  font-family: var(--font-heading), var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -0.025em;
+}
+
+.font-body,
+.font-sans-clean {
+  font-family: var(--font-body), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Transform thin headings into solid, balanced luxury weights */
+.font-serif-luxury.font-light,
+.font-heading.font-light {
+  font-weight: 550;
+}
+
+/* Hide scrollbars for fluid horizontal lists */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Reference video copper pill button */
+.btn-copper-pill {
+  background-color: #FA9D60;
+  color: #101412;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  border-radius: 9999px;
+  transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 4px 20px rgba(250, 157, 96, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-copper-pill:hover {
+  background-color: #F28C47;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(250, 157, 96, 0.35);
+}
+
+.btn-copper-pill:active {
+  transform: translateY(0);
+}
+
+/* Ghost outline button */
+.btn-ghost-luxury {
+  border: 1px solid rgba(246, 245, 240, 0.2);
+  color: #F6F5F0;
+  border-radius: 9999px;
+  transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-ghost-luxury:hover {
+  border-color: #FA9D60;
+  color: #FA9D60;
+  background-color: rgba(250, 157, 96, 0.05);
+}
+
+/* Dotted luxury pattern as seen in reference */
+.pattern-dots {
+  background-image: radial-gradient(rgba(216, 137, 85, 0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.pattern-dots-dark {
+  background-image: radial-gradient(rgba(246, 245, 240, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Rounded section container matching reference video aesthetic */
+.rounded-editorial-panel {
+  border-radius: 28px;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .rounded-editorial-panel {
+    border-radius: 36px;
+  }
+}
+
+/* Subtle glow utilities */
+.glow-copper-sm {
+  box-shadow: 0 0 25px rgba(216, 137, 85, 0.2);
+}
+
+.glow-emerald-ambient {
+  box-shadow: 0 0 80px rgba(8, 35, 29, 0.6);
+}
+
+/* Underline animated hover link */
+.luxury-link {
+  position: relative;
+  display: inline-block;
+}
+
+.luxury-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 1px;
+  bottom: -2px;
+  left: 0;
+  background-color: #D88955;
+  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.luxury-link:hover::after {
+  width: 100%;
+}
