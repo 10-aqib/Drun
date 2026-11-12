@@ -1,20 +1,35 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Lock, User, ArrowRight, Shield } from "lucide-react";
+import Link from "next/link";
+import {
+  X,
+  User,
+  ArrowRight,
+  Shield
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { isValidAdminPasskey } from "@/lib/adminAuth";
 
 export default function AuthModal() {
   const { isAuthModalOpen, closeAuthModal, login, user, logout } = useAuth();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [mode, setMode] = useState<"customer" | "admin">("customer");
+  const [passkey, setPasskey] = useState("");
+  const [error, setError] = useState("");
 
   if (!isAuthModalOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+    if (mode === "admin" && !isValidAdminPasskey(passkey)) {
+      setError("Invalid staff passkey.");
+      return;
+    }
+    setError("");
+    setPasskey("");
     login(email, name || (mode === "admin" ? "Store Administrator" : "Patron"), mode);
   };
 
@@ -51,14 +66,14 @@ export default function AuthModal() {
 
             <div className="space-y-3 pt-4">
               {user.role === "admin" && (
-                <a
+                <Link
                   href="/admin"
                   onClick={closeAuthModal}
                   className="btn-copper-pill w-full py-3 text-xs uppercase tracking-widest font-bold flex items-center justify-center gap-2"
                 >
                   <Shield size={16} />
                   <span>Open Admin Console</span>
-                </a>
+                </Link>
               )}
               <button
                 onClick={logout}
@@ -84,7 +99,7 @@ export default function AuthModal() {
             <div className="flex bg-[#07100E] p-1 rounded-full border border-white/10 mb-6 text-xs">
               <button
                 type="button"
-                onClick={() => setMode("customer")}
+                onClick={() => { setMode("customer"); setError(""); }}
                 className={`flex-1 py-2 rounded-full transition-all ${
                   mode === "customer"
                     ? "bg-[#FA9D60] text-[#101412] font-semibold shadow"
@@ -95,7 +110,7 @@ export default function AuthModal() {
               </button>
               <button
                 type="button"
-                onClick={() => setMode("admin")}
+                onClick={() => { setMode("admin"); setError(""); }}
                 className={`flex-1 py-2 rounded-full transition-all ${
                   mode === "admin"
                     ? "bg-[#FA9D60] text-[#101412] font-semibold shadow"
@@ -141,10 +156,13 @@ export default function AuthModal() {
                   </label>
                   <input
                     type="password"
-                    defaultValue="drun2026"
+                    required
+                    value={passkey}
+                    onChange={(e) => setPasskey(e.target.value)}
+                    autoComplete="off"
                     className="w-full px-4 py-3 rounded-xl bg-[#07100E]/70 border border-white/10 focus:border-[#FA9D60] outline-none text-sm transition-colors"
                   />
-                  <p className="text-[10px] text-[#9EAAA4] mt-1">Default test key: drun2026</p>
+                  {error && <p className="text-[11px] text-red-300 mt-1">{error}</p>}
                 </div>
               )}
 

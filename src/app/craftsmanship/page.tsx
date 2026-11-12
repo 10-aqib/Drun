@@ -1,6 +1,8 @@
 import React from "react";
 import Link from "next/link";
-import { Layers, Sparkles, Compass, Feather, History, CheckCircle2, ShieldCheck } from "lucide-react";
+import {
+  CheckCircle2
+} from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CRAFTSMANSHIP_POINTS } from "@/data/products";

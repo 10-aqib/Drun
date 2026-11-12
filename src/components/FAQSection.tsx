@@ -13,7 +13,7 @@ export default function FAQSection() {
   };
 
   return (
-    <section className="relative z-30 px-4 sm:px-6 md:px-8 lg:px-12 py-16 sm:py-20 lg:py-24">
+    <section id="faq" className="scroll-mt-20 relative z-30 px-4 sm:px-6 md:px-8 lg:px-12 py-16 sm:py-20 lg:py-24">
       {/* Warm-White FAQ Panel */}
       <div className="max-w-7xl mx-auto bg-[#F8F7F3] text-[#101412] rounded-3xl lg:rounded-[36px] shadow-2xl p-6 sm:p-10 lg:p-14 border border-[#E9E8DF]">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">

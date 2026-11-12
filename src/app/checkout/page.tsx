@@ -1,5 +1,6 @@
 "use client";
 
+import type { Order } from "@/lib/types";
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -7,9 +8,7 @@ import {
   ArrowLeft,
   ShieldCheck,
   Truck,
-  CheckCircle2,
   Lock,
-  CreditCard,
   Banknote,
   Building,
   AlertCircle
@@ -18,6 +17,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useCart } from "@/context/CartContext";
 import { formatPKR } from "@/data/products";
+import { readJson, writeJson } from "@/lib/localStore";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -57,11 +57,25 @@ export default function CheckoutPage() {
     "Mardan",
   ];
 
+  const provinceByCity: Record<string, string> = {
+    Lahore: "Punjab", Rawalpindi: "Punjab", Faisalabad: "Punjab", Multan: "Punjab",
+    Sialkot: "Punjab", Gujranwala: "Punjab", Sargodha: "Punjab", Bahawalpur: "Punjab",
+    Karachi: "Sindh", Hyderabad: "Sindh",
+    Islamabad: "Islamabad Capital Territory",
+    Peshawar: "Khyber Pakhtunkhwa", Abbottabad: "Khyber Pakhtunkhwa", Mardan: "Khyber Pakhtunkhwa",
+    Quetta: "Balochistan",
+  };
+
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
     if (step === 1) {
-      if (!formData.fullName || !formData.email || !formData.phone || !formData.address) {
+      if (!formData.fullName.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.address.trim()) {
         setError("Please fill in all mandatory delivery details.");
+        return;
+      }
+      const phoneDigits = formData.phone.replace(/\D/g, "");
+      if (phoneDigits.length < 10 || phoneDigits.length > 13) {
+        setError("Please enter a valid Pakistani phone number, e.g. 0300-1234567.");
         return;
       }
       setError("");
@@ -81,7 +95,11 @@ export default function CheckoutPage() {
     setError("");
 
     try {
-      const orderId = "DRN-" + Math.floor(100000 + Math.random() * 900000);
+      const existingOrders = readJson<Order[]>("drun_orders", []);
+      let orderId = "DRN-" + Math.floor(100000 + Math.random() * 900000);
+      while (existingOrders.some((o) => o.id === orderId)) {
+        orderId = "DRN-" + Math.floor(100000 + Math.random() * 900000);
+      }
       const newOrder = {
         id: orderId,
         items: cart,
@@ -93,9 +111,7 @@ export default function CheckoutPage() {
       };
 
       // Persist to localStorage
-      const existingOrders = JSON.parse(localStorage.getItem("drun_orders") || "[]");
-      existingOrders.unshift(newOrder);
-      localStorage.setItem("drun_orders", JSON.stringify(existingOrders));
+      writeJson("drun_orders", [newOrder, ...existingOrders]);
 
       // Clear Cart
       clearCart();
@@ -104,7 +120,7 @@ export default function CheckoutPage() {
       setTimeout(() => {
         router.push(`/order-success?id=${orderId}`);
       }, 800);
-    } catch (err) {
+    } catch {
       setIsSubmitting(false);
       setError("Failed to process order. Please try again.");
     }
@@ -270,7 +286,13 @@ export default function CheckoutPage() {
                     </label>
                     <select
                       value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          city: e.target.value,
+                          province: provinceByCity[e.target.value] ?? formData.province,
+                        })
+                      }
                       className="w-full bg-[#08231D] border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#FA9D60]"
                     >
                       {pakistaniCities.map((city) => (

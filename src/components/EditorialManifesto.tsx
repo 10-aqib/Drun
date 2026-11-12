@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { ArrowDown } from "lucide-react";
 
 export default function EditorialManifesto() {
   const sectionRef = useRef<HTMLDivElement | null>(null);

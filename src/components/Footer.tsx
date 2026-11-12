@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Send } from "lucide-react";
+import { readJson, writeJson } from "@/lib/localStore";
 
 export default function Footer() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
@@ -13,10 +14,10 @@ export default function Footer() {
     if (!newsletterEmail) return;
 
     // Save to localStorage
-    const existing = JSON.parse(localStorage.getItem("drun_newsletter") || "[]");
-    if (!existing.includes(newsletterEmail)) {
-      existing.push(newsletterEmail);
-      localStorage.setItem("drun_newsletter", JSON.stringify(existing));
+    const existing = readJson<string[]>("drun_newsletter", []);
+    const email = newsletterEmail.trim().toLowerCase();
+    if (!existing.includes(email)) {
+      writeJson("drun_newsletter", [...existing, email]);
     }
 
     setIsSubscribed(true);
@@ -99,17 +100,17 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2.5 text-xs text-[#9EAAA4]">
               <li>
-                <Link href="/#heritage" className="hover:text-white transition-colors">
+                <Link href="/our-story" className="hover:text-white transition-colors">
                   Our Story
                 </Link>
               </li>
               <li>
-                <Link href="/#craftsmanship" className="hover:text-white transition-colors">
+                <Link href="/craftsmanship" className="hover:text-white transition-colors">
                   Craftsmanship
                 </Link>
               </li>
               <li>
-                <Link href="/#contact" className="hover:text-white transition-colors">
+                <Link href="/contact" className="hover:text-white transition-colors">
                   Contact Concierge
                 </Link>
               </li>
@@ -133,17 +134,17 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/#faq" className="hover:text-white transition-colors">
+                <Link href="/policies#delivery" className="hover:text-white transition-colors">
                   Delivery & Shipping
                 </Link>
               </li>
               <li>
-                <Link href="/#faq" className="hover:text-white transition-colors">
+                <Link href="/policies#exchange" className="hover:text-white transition-colors">
                   Returns & Exchanges
                 </Link>
               </li>
               <li>
-                <Link href="/#faq" className="hover:text-white transition-colors">
+                <Link href="/faq" className="hover:text-white transition-colors">
                   Care Instructions
                 </Link>
               </li>
@@ -157,17 +158,17 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2.5 text-xs text-[#9EAAA4]">
               <li>
-                <Link href="/policies" className="hover:text-white transition-colors">
+                <Link href="/policies#privacy" className="hover:text-white transition-colors">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/policies" className="hover:text-white transition-colors">
+                <Link href="/policies#terms" className="hover:text-white transition-colors">
                   Terms & Conditions
                 </Link>
               </li>
               <li>
-                <Link href="/policies" className="hover:text-white transition-colors">
+                <Link href="/policies#exchange" className="hover:text-white transition-colors">
                   Exchange Guarantee
                 </Link>
               </li>
@@ -227,13 +228,13 @@ export default function Footer() {
         <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-[#9EAAA4] gap-4">
           <p>&copy; 2026 Drun. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <Link href="/policies" className="hover:text-white transition-colors">
+            <Link href="/policies#privacy" className="hover:text-white transition-colors">
               Privacy
             </Link>
-            <Link href="/policies" className="hover:text-white transition-colors">
+            <Link href="/policies#terms" className="hover:text-white transition-colors">
               Terms
             </Link>
-            <Link href="/policies" className="hover:text-white transition-colors">
+            <Link href="/policies#cookies" className="hover:text-white transition-colors">
               Cookies
             </Link>
           </div>

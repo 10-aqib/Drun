@@ -1,6 +1,8 @@
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, Compass, History, Shield, Sparkles } from "lucide-react";
+import {
+  Sparkles
+} from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 

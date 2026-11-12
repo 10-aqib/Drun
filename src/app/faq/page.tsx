@@ -2,7 +2,10 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Plus, Minus, MessageCircle, HelpCircle } from "lucide-react";
+import {
+  Plus,
+  Minus
+} from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { FAQS } from "@/data/products";

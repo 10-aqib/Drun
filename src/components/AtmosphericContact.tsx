@@ -1,7 +1,9 @@
 "use client";
 
+import type { ContactMessage } from "@/lib/types";
 import React, { useState } from "react";
 import { Send, CheckCircle2, AlertCircle } from "lucide-react";
+import { readJson, writeJson } from "@/lib/localStore";
 
 export default function AtmosphericContact() {
   const [formData, setFormData] = useState({
@@ -27,14 +29,10 @@ export default function AtmosphericContact() {
     setStatus("submitting");
     try {
       // Save message to localStorage and mock backend
-      const existing = JSON.parse(localStorage.getItem("drun_messages") || "[]");
-      const newMessage = {
-        id: "msg-" + Date.now(),
-        ...formData,
-        createdAt: new Date().toISOString(),
-      };
-      existing.unshift(newMessage);
-      localStorage.setItem("drun_messages", JSON.stringify(existing));
+      writeJson("drun_messages", [
+        { id: "msg-" + Date.now(), ...formData, createdAt: new Date().toISOString() },
+        ...readJson<ContactMessage[]>("drun_messages", []),
+      ]);
 
       setTimeout(() => {
         setStatus("success");
@@ -47,14 +45,14 @@ export default function AtmosphericContact() {
           consent: true,
         });
       }, 700);
-    } catch (err) {
+    } catch {
       setStatus("error");
       setErrorMessage("An unexpected error occurred. Please try again.");
     }
   };
 
   return (
-    <section className="relative z-30 px-4 sm:px-6 md:px-8 lg:px-12 py-16 sm:py-20 lg:py-28 bg-[#031A16] text-[#F6F5F0] overflow-hidden">
+    <section id="contact" className="scroll-mt-20 relative z-30 px-4 sm:px-6 md:px-8 lg:px-12 py-16 sm:py-20 lg:py-28 bg-[#031A16] text-[#F6F5F0] overflow-hidden">
       {/* Background Ambience & Night Sky */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#031A16] via-[#08231D] to-[#07100E] pointer-events-none" />
 

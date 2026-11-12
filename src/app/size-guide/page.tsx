@@ -1,6 +1,10 @@
 import React from "react";
-import Link from "next/link";
-import { Ruler, CheckCircle2, ShieldCheck, ArrowRight, MessageCircle } from "lucide-react";
+import {
+  Ruler,
+  CheckCircle2,
+  ShieldCheck,
+  MessageCircle
+} from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 

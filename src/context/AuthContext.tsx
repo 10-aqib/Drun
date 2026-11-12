@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
+import { safeJson, useStoredValue, writeJson } from "@/lib/localStore";
 
 export interface UserProfile {
   id: string;
@@ -24,22 +25,16 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+const USER_KEY = "drun_user";
 
-  useEffect(() => {
-    try {
-      const savedUser = localStorage.getItem("drun_user");
-      if (savedUser) {
-        setUser(JSON.parse(savedUser));
-      }
-    } catch (e) {
-      console.error("Failed to load user auth from localStorage", e);
-    }
-    setIsLoaded(true);
-  }, []);
+function parseUser([raw]: (string | null)[]): UserProfile | null {
+  const u = safeJson<UserProfile | null>(raw, null);
+  return u && typeof u.email === "string" && typeof u.name === "string" ? u : null;
+}
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const user = useStoredValue([USER_KEY], parseUser);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const login = (
     email: string,
@@ -53,14 +48,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       role,
       city: "Lahore",
     };
-    setUser(newUser);
-    localStorage.setItem("drun_user", JSON.stringify(newUser));
+    writeJson(USER_KEY, newUser);
     setIsAuthModalOpen(false);
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem("drun_user");
+    writeJson(USER_KEY, undefined);
   };
 
   return (

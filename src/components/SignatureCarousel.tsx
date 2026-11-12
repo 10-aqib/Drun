@@ -1,21 +1,36 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ArrowUpRight, Eye } from "lucide-react";
-import { PRODUCTS, formatPKR } from "@/data/products";
+import { formatPKR } from "@/data/products";
+import { useCatalog } from "@/lib/catalog";
 
 export default function SignatureCarousel() {
-  const signatureProducts = PRODUCTS.filter((p) => p.isSignature);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const catalog = useCatalog();
+  const signatureProducts = catalog.filter((p) => p.isSignature);
+  const [rawIndex, setRawIndex] = useState(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const count = signatureProducts.length;
+  const activeIndex = count ? Math.min(rawIndex, count - 1) : 0;
 
-  const prevSlide = () => {
-    setActiveIndex((prev) => (prev === 0 ? signatureProducts.length - 1 : prev - 1));
+  const goTo = (index: number) => {
+    setRawIndex(index);
+    // Keep the active card visible inside the horizontal scroller
+    const card = trackRef.current?.children[index] as HTMLElement | undefined;
+    const track = trackRef.current;
+    if (card && track) {
+      track.scrollTo({
+        left: card.offsetLeft - (track.clientWidth - card.clientWidth) / 2,
+        behavior: "smooth",
+      });
+    }
   };
 
-  const nextSlide = () => {
-    setActiveIndex((prev) => (prev === signatureProducts.length - 1 ? 0 : prev + 1));
-  };
+  const prevSlide = () => goTo(activeIndex === 0 ? count - 1 : activeIndex - 1);
+  const nextSlide = () => goTo(activeIndex === count - 1 ? 0 : activeIndex + 1);
+
+  if (count === 0) return null;
 
   return (
     <section className="relative z-30 px-4 sm:px-6 md:px-8 lg:px-12 py-16 sm:py-20 lg:py-28 bg-[#031A16] text-[#F6F5F0] overflow-hidden">
@@ -40,7 +55,7 @@ export default function SignatureCarousel() {
               href="/shop"
               className="btn-copper-pill px-6 py-3 text-xs uppercase tracking-widest font-bold inline-flex items-center gap-2 group"
             >
-              <span>View All 29 Designs</span>
+              <span>View All {catalog.length} Designs</span>
               <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
@@ -48,14 +63,17 @@ export default function SignatureCarousel() {
 
         {/* Interactive Multi-Card Carousel */}
         <div className="relative py-6">
-          <div className="flex gap-4 sm:gap-6 justify-center items-center overflow-x-auto no-scrollbar py-4 px-2">
+          <div
+            ref={trackRef}
+            className="flex gap-4 sm:gap-6 items-center overflow-x-auto no-scrollbar py-4 px-2 snap-x"
+          >
             {signatureProducts.map((product, idx) => {
               const isActive = activeIndex === idx;
 
               return (
                 <div
                   key={product.id}
-                  onClick={() => setActiveIndex(idx)}
+                  onClick={() => goTo(idx)}
                   className={`flex-shrink-0 cursor-pointer transition-all duration-500 rounded-3xl p-6 sm:p-8 flex flex-col justify-between select-none ${
                     isActive
                       ? "w-[300px] sm:w-[380px] bg-[#F8F7F3] text-[#101412] shadow-2xl scale-105 z-20 border-2 border-[#FA9D60]"
@@ -69,7 +87,7 @@ export default function SignatureCarousel() {
                         isActive ? "text-[#A56D47]" : "text-[#9EAAA4]"
                       }`}
                     >
-                      0{idx + 1}
+                      {String(idx + 1).padStart(2, "0")}
                     </span>
                     <span
                       className={`text-[10px] uppercase tracking-wider font-bold px-2.5 py-0.5 rounded-full ${
@@ -151,7 +169,7 @@ export default function SignatureCarousel() {
               <ArrowLeft size={18} />
             </button>
             <div className="text-xs font-mono text-[#9EAAA4] tracking-widest px-2">
-              0{activeIndex + 1} / 0{signatureProducts.length}
+              {String(activeIndex + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
             </div>
             <button
               onClick={nextSlide}
