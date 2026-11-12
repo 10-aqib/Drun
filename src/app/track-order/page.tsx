@@ -1,14 +1,13 @@
 "use client";
 
 import type { Order } from "@/lib/types";
-import React, { useMemo, useState, Suspense } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search, Truck, CheckCircle2, MapPin, ShieldAlert, XCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { safeJson, useStoredValue } from "@/lib/localStore";
+import { lookupOrder } from "@/lib/storeApi";
 
-const ORDERS_KEY = "drun_orders";
 // Order Reference shown as the example on this page; always resolves so visitors can preview tracking.
 const DEMO_ORDER_ID = "DRN-849201";
 
@@ -28,60 +27,51 @@ function stageIndex(status: string): number {
   return 0;
 }
 
-const digits = (v: string) => v.replace(/\D/g, "");
+const DEMO_ORDER: Order = {
+  id: DEMO_ORDER_ID,
+  status: "Dispatched (TCS)",
+  createdAt: new Date(0).toISOString(),
+  customer: { fullName: "Muhammad Asim", city: "Lahore", province: "Punjab", phone: "0300-9876543" },
+  items: [{ product: { name: "The Royal Norozi", price: 15500 }, size: 42, quantity: 1 }],
+  total: 15500,
+};
 
-function parseOrders([raw]: (string | null)[]): Order[] {
-  const list = safeJson<unknown>(raw, []);
-  return Array.isArray(list) ? (list as Order[]) : [];
+async function findOrder(query: string): Promise<Order | null> {
+  const found = await lookupOrder(query);
+  if (found) return found;
+  return query.trim().toUpperCase() === DEMO_ORDER_ID ? DEMO_ORDER : null;
 }
+
+type Lookup = { query: string; loading: boolean; order: Order | null };
 
 function TrackOrderContent() {
   const searchParams = useSearchParams();
   const initialId = searchParams.get("id") || "";
 
-  const orders = useStoredValue([ORDERS_KEY], parseOrders);
   const [orderQuery, setOrderQuery] = useState(initialId);
-  const [submittedQuery, setSubmittedQuery] = useState(initialId);
-  const hasSearched = submittedQuery.trim() !== "";
+  const [lookup, setLookup] = useState<Lookup>({ query: initialId, loading: initialId.trim() !== "", order: null });
+  const hasSearched = lookup.query.trim() !== "";
+  const trackedOrder = lookup.order;
 
-  const trackedOrder = useMemo(() => {
-    const clean = submittedQuery.trim().toUpperCase();
-    if (!clean) return null;
+  const runLookup = (query: string) => {
+    setLookup({ query, loading: true, order: null });
+    void findOrder(query).then((order) => setLookup((cur) => (cur.query === query ? { query, loading: false, order } : cur)));
+  };
 
-    const byId = orders.find((o) => String(o.id).toUpperCase() === clean);
-    if (byId) return byId;
-
-    // Phone lookup: compare digits only and require a meaningful number
-    const phone = digits(clean);
-    if (phone.length >= 10) {
-      const byPhone = orders.find((o) => {
-        const p = digits(String(o.customer?.phone ?? ""));
-        return p.length >= 10 && (p.endsWith(phone) || phone.endsWith(p));
-      });
-      if (byPhone) return byPhone;
-    }
-
-    if (clean === DEMO_ORDER_ID) {
-      return {
-        id: DEMO_ORDER_ID,
-        status: "Dispatched (TCS)",
-        createdAt: new Date(0).toISOString(),
-        customer: {
-          fullName: "Muhammad Asim",
-          city: "Lahore",
-          province: "Punjab",
-          phone: "0300-9876543",
-        },
-        items: [{ product: { name: "The Royal Norozi", price: 15500 }, size: 42, quantity: 1 }],
-        total: 15500,
-      };
-    }
-    return null;
-  }, [orders, submittedQuery]);
+  useEffect(() => {
+    if (!initialId.trim()) return;
+    let cancelled = false;
+    void findOrder(initialId).then((order) => {
+      if (!cancelled) setLookup({ query: initialId, loading: false, order });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [initialId]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmittedQuery(orderQuery);
+    if (orderQuery.trim()) runLookup(orderQuery);
   };
 
   return (
@@ -121,7 +111,10 @@ function TrackOrderContent() {
       </form>
 
       {/* Tracking Results */}
-      {hasSearched && (
+      {hasSearched && lookup.loading && (
+        <p className="text-center text-sm text-[#9EAAA4]" role="status">Looking up your order…</p>
+      )}
+      {hasSearched && !lookup.loading && (
         trackedOrder ? (
           <div className="bg-[#07100E] border border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl space-y-8 animate-in fade-in duration-300">
             {/* Header info */}

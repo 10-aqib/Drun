@@ -1,6 +1,5 @@
 "use client";
 
-import type { Order } from "@/lib/types";
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,7 +16,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useCart } from "@/context/CartContext";
 import { formatPKR } from "@/data/products";
-import { readJson, writeJson } from "@/lib/localStore";
+import { placeOrder } from "@/lib/storeApi";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -90,40 +89,36 @@ export default function CheckoutPage() {
       setError("Your shopping bag is empty.");
       return;
     }
+    if (isSubmitting) return;
 
     setIsSubmitting(true);
     setError("");
 
-    try {
-      const existingOrders = readJson<Order[]>("drun_orders", []);
-      let orderId = "DRN-" + Math.floor(100000 + Math.random() * 900000);
-      while (existingOrders.some((o) => o.id === orderId)) {
-        orderId = "DRN-" + Math.floor(100000 + Math.random() * 900000);
-      }
-      const newOrder = {
-        id: orderId,
-        items: cart,
-        total: cartTotal,
-        customer: formData,
-        status: "Processing",
-        paymentStatus: formData.paymentMethod === "cod" ? "Pending (Cash on Delivery)" : "Pending Verification",
-        createdAt: new Date().toISOString(),
-      };
+    const result = await placeOrder(
+      {
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        address: formData.address.trim(),
+        city: formData.city,
+        province: formData.province,
+        postalCode: formData.postalCode.trim(),
+        deliveryNotes: formData.deliveryNotes.trim(),
+        paymentMethod: formData.paymentMethod,
+      },
+      cart,
+      cartTotal
+    );
 
-      // Persist to localStorage
-      writeJson("drun_orders", [newOrder, ...existingOrders]);
-
-      // Clear Cart
-      clearCart();
-
-      // Redirect to Order Confirmation
-      setTimeout(() => {
-        router.push(`/order-success?id=${orderId}`);
-      }, 800);
-    } catch {
+    if (!result.ok) {
+      // Keep the bag intact so the customer can fix the problem and retry.
       setIsSubmitting(false);
-      setError("Failed to process order. Please try again.");
+      setError(result.error);
+      return;
     }
+
+    clearCart();
+    router.push(`/order-success?id=${encodeURIComponent(result.data.id)}`);
   };
 
   if (cart.length === 0 && !isSubmitting) {

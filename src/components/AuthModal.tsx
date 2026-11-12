@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { isValidAdminPasskey } from "@/lib/adminAuth";
+import { isSupabaseConfigured } from "@/lib/supabase";
 
 export default function AuthModal() {
   const { isAuthModalOpen, closeAuthModal, login, user, logout } = useAuth();
@@ -121,6 +122,21 @@ export default function AuthModal() {
               </button>
             </div>
 
+            {mode === "admin" && isSupabaseConfigured() ? (
+              <div className="space-y-4 text-center">
+                <p className="text-xs text-[#9EAAA4]">
+                  Staff sign in with their own account on the admin console.
+                </p>
+                <Link
+                  href="/admin"
+                  onClick={closeAuthModal}
+                  className="btn-copper-pill w-full py-3.5 text-sm flex items-center justify-center gap-2"
+                >
+                  <span>Go to Staff Sign In</span>
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
+            ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs uppercase tracking-wider text-[#9EAAA4] mb-1.5">
@@ -176,6 +192,7 @@ export default function AuthModal() {
                 </button>
               </div>
             </form>
+            )}
           </div>
         )}
       </div>

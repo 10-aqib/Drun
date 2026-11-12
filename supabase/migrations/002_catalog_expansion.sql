@@ -92,8 +92,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -169,8 +168,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -246,8 +244,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -323,8 +320,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -400,8 +396,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -477,8 +472,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -554,8 +548,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -631,8 +624,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -708,8 +700,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -785,8 +776,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -862,8 +852,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -939,8 +928,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -1016,8 +1004,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -1081,7 +1068,7 @@ INSERT INTO products (
     '890g per pair',
     'A sun-baked desert interpretation of the Kaptaan cut. The natural warm tan leather absorbs conditioning oils over time, developing a darkened, richly nuanced patina with every journey.',
     '{"Natural undyed veg-tan leather that personalizes with sun exposure","Deep contour footbed that cradles foot arches","Hand-grooved tyre rubber sole","Double reinforced heel stay"}',
-    '{"Apply neat's-foot oil or leather balm sparingly for deeper amber tone","Air-dry naturally if exposed to rainwater"}',
+    '{"Apply neat''s-foot oil or leather balm sparingly for deeper amber tone","Air-dry naturally if exposed to rainwater"}',
     'Complimentary tracked courier delivery across Pakistan (2–4 business days).',
     '14-day complimentary size exchange in original packaging.'
 ) ON CONFLICT (id) DO UPDATE SET
@@ -1093,8 +1080,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -1170,8 +1156,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -1247,8 +1232,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -1324,8 +1308,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -1401,8 +1384,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -1478,8 +1460,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -1555,8 +1536,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -1632,8 +1612,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -1709,8 +1688,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -1786,8 +1764,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -1863,8 +1840,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -1940,8 +1916,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -2017,8 +1992,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -2094,8 +2068,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -2171,8 +2144,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,
@@ -2248,8 +2220,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,

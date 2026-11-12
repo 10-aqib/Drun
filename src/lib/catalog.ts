@@ -2,6 +2,8 @@
 
 import { PRODUCTS, CATEGORIES, Product } from "@/data/products";
 import { safeJson, useStoredValue, writeJson } from "@/lib/localStore";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { useRemoteCatalog } from "@/lib/remoteCatalog";
 
 /** Admin edits / additions (list of full products, same shape as before). */
 export const MANAGED_KEY = "drun_managed_products";
@@ -62,7 +64,11 @@ function parseCatalog([managed, archived]: (string | null)[]): Product[] {
 
 /** The live storefront catalogue (built-ins + admin changes). */
 export function useCatalog(): Product[] {
-  return useStoredValue([MANAGED_KEY, ARCHIVED_KEY], parseCatalog);
+  const local = useStoredValue([MANAGED_KEY, ARCHIVED_KEY], parseCatalog);
+  const remote = useRemoteCatalog();
+  // With Supabase configured the database owns the catalogue; local admin edits only apply in demo mode.
+  if (isSupabaseConfigured()) return remote ?? BASE_CATALOG;
+  return local;
 }
 
 /** Persist the admin's full product list; anything built-in that is missing is archived. */

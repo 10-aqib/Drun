@@ -70,7 +70,11 @@ function escapeSql(str) {
 
 function escapeSqlArray(arr) {
   if (!arr || !Array.isArray(arr)) return "'{}'";
-  const escapedItems = arr.map(item => `"${String(item).replace(/"/g, '\\"')}"`).join(",");
+  // 1) escape for the Postgres array literal, 2) double single quotes for the SQL string
+  const escapedItems = arr
+    .map(item => `"${String(item).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`)
+    .join(",")
+    .replace(/'/g, "''");
   return `'{${escapedItems}}'`;
 }
 
@@ -131,8 +135,7 @@ INSERT INTO products (
     brand = EXCLUDED.brand,
     price = EXCLUDED.price,
     original_price = EXCLUDED.original_price,
-    in_stock = EXCLUDED.in_stock,
-    stock_count = EXCLUDED.stock_count,
+    -- stock_count / in_stock are deliberately NOT overwritten so re-running this seed never resets live stock
     status = EXCLUDED.status,
     photo_status = EXCLUDED.photo_status,
     image = EXCLUDED.image,

@@ -3,23 +3,27 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Send } from "lucide-react";
-import { readJson, writeJson } from "@/lib/localStore";
+import { subscribeNewsletter } from "@/lib/storeApi";
 
 export default function Footer() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const [subscribeError, setSubscribeError] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newsletterEmail) return;
+    if (!newsletterEmail.trim() || subscribing) return;
 
-    // Save to localStorage
-    const existing = readJson<string[]>("drun_newsletter", []);
-    const email = newsletterEmail.trim().toLowerCase();
-    if (!existing.includes(email)) {
-      writeJson("drun_newsletter", [...existing, email]);
+    setSubscribing(true);
+    setSubscribeError("");
+    const result = await subscribeNewsletter(newsletterEmail);
+    setSubscribing(false);
+    if (!result.ok) {
+      setSubscribeError(result.error);
+      return;
     }
-
     setIsSubscribed(true);
     setNewsletterEmail("");
   };
@@ -214,12 +218,18 @@ export default function Footer() {
                 />
                 <button
                   type="submit"
-                  className="w-10 h-10 rounded-xl bg-[#FA9D60] text-[#101412] flex items-center justify-center hover:bg-[#F28C47] transition-colors flex-shrink-0"
+                  disabled={subscribing}
+                  className="w-10 h-10 disabled:opacity-60 rounded-xl bg-[#FA9D60] text-[#101412] flex items-center justify-center hover:bg-[#F28C47] transition-colors flex-shrink-0"
                   aria-label="Subscribe"
                 >
                   <Send size={15} />
                 </button>
               </form>
+            )}
+            {subscribeError && (
+              <p role="alert" className="mt-2 text-[11px] text-red-300">
+                {subscribeError}
+              </p>
             )}
           </div>
         </div>
