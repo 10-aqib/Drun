@@ -1,37 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Drun. — Handcrafted Peshawari Footwear
 
-## Getting Started
-
-First, run the development server:
+Next.js storefront with a Supabase back end (and a browser-only demo mode).
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Connect Supabase
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Create a project at [supabase.com](https://supabase.com).
+2. In **SQL Editor**, run these files from `supabase/migrations/` in order:
+   1. `001_initial_schema.sql` — tables and base policies
+   2. `002_catalog_expansion.sql` — categories and the 29 catalogue products
+   3. `003_secure_commerce.sql` — secure order/tracking functions and admin-only policies
+3. Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SUPABASE_URL` and
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Project Settings → API). On Vercel, add the same two variables
+   in Project Settings → Environment Variables and redeploy (they are read at build time).
+4. Create your admin account: **Authentication → Users → Add user** (email + password), then give it the
+   admin role in the SQL editor:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```sql
+   update auth.users
+      set raw_app_meta_data = raw_app_meta_data || '{"role":"admin"}'
+    where email = 'you@example.com';
+   ```
+5. Open `/admin` and sign in with that account.
 
-## Learn More
+### What goes through Supabase
 
-To learn more about Next.js, take a look at the following resources:
+| Feature | How |
+| --- | --- |
+| Catalogue | Public read of `products` (archived designs are hidden) |
+| Checkout | `place_order()` — prices, names and stock come from the database, stock is decremented atomically |
+| Order tracking | `track_order()` — by reference or full phone number; returns no street address or email |
+| Contact form / newsletter | Validated inserts; only admins can read them |
+| Admin console | Supabase Auth; only users with `app_metadata.role = 'admin'` can read orders/messages or change products |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Customers have no direct access to the `orders` / `order_items` tables. Archiving a product sets
+`status = 'archived'` so order history is preserved.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Demo mode
 
-## Deploy on Vercel
+With the two environment variables unset the store runs entirely in the browser (localStorage): orders,
+messages and admin edits stay on that device, and `/admin` uses a local passkey. Use it for design work
+only — it is not a real back end.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# Drun
+- `node scripts/generate_sql_seed.js` — regenerate `002_catalog_expansion.sql` from `src/data/products.ts`
+- `node scripts/generate_draft_footwear_assets.js` — regenerate the illustrated stand-in product images

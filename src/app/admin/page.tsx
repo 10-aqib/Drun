@@ -1,6 +1,5 @@
 "use client";
 
-import type { ContactMessage, Order } from "@/lib/types";
 import React, { useState } from "react";
 import Link from "next/link";
 import {
@@ -18,32 +17,26 @@ import {
   Trash2
 } from "lucide-react";
 import { PRODUCTS, Product, formatPKR } from "@/data/products";
-import { ARCHIVED_KEY, restoreArchivedProducts, saveCatalog, useCatalog } from "@/lib/catalog";
-import { safeJson, useStoredValue, writeJson } from "@/lib/localStore";
+import { useAdminBackend } from "@/lib/adminBackend";
 import { isValidAdminPasskey } from "@/lib/adminAuth";
 import { useAuth } from "@/context/AuthContext";
 
-const ORDERS_KEY = "drun_orders";
-const MESSAGES_KEY = "drun_messages";
-const NEWSLETTER_KEY = "drun_newsletter";
-
-function parseList<T>([raw]: (string | null)[]): T[] {
-  const list = safeJson<unknown>(raw, []);
-  return Array.isArray(list) ? (list as T[]) : [];
-}
-
 export default function AdminPage() {
   const { user, login, logout, isAdmin } = useAuth();
+  const backend = useAdminBackend();
   const [passkey, setPasskey] = useState("");
+  const [email, setEmail] = useState("");
   const [authError, setAuthError] = useState("");
+  const [signingIn, setSigningIn] = useState(false);
   const [activeTab, setActiveTab] = useState<"orders" | "products" | "messages" | "subscribers">("orders");
 
-  // Live store data (shared with the storefront through localStorage)
-  const productList = useCatalog();
-  const orders = useStoredValue([ORDERS_KEY], parseList<Order>);
-  const messages = useStoredValue([MESSAGES_KEY], parseList<ContactMessage>);
-  const subscribers = useStoredValue([NEWSLETTER_KEY], parseList<string>);
-  const archivedIds = useStoredValue([ARCHIVED_KEY], parseList<string>);
+  // Live store data: Supabase when configured, browser demo store otherwise
+  const productList = backend.products;
+  const orders = backend.orders;
+  const messages = backend.messages;
+  const subscribers = backend.subscribers;
+  const archivedCount = backend.archivedCount;
+  const authorized = backend.remoteMode ? backend.signedIn : isAdmin || user?.role === "admin";
 
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -69,43 +62,49 @@ export default function AdminPage() {
     image: "",
   });
 
-  const handleAdminAuth = (e: React.FormEvent) => {
+  const handleAdminAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError("");
+    if (backend.remoteMode) {
+      setSigningIn(true);
+      const err = await backend.signIn(email.trim(), passkey);
+      setSigningIn(false);
+      if (err) setAuthError(err);
+      setPasskey("");
+      return;
+    }
     if (isValidAdminPasskey(passkey)) {
       login("admin@drun.pk", "Master Cobbler & Admin", "admin");
-      setAuthError("");
     } else {
       setAuthError("Invalid master security passkey.");
     }
   };
 
+  const handleSignOut = () => {
+    if (backend.remoteMode) backend.signOut();
+    else logout();
+  };
+
   const handleUpdateOrderStatus = (orderId: string, newStatus: string) => {
-    writeJson(
-      ORDERS_KEY,
-      orders.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
-    );
+    void backend.updateOrderStatus(orderId, newStatus);
   };
 
   const handleSaveProductEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
-    saveCatalog(productList.map((p) => (p.id === editingProduct.id ? editingProduct : p)));
+    void backend.saveProduct(editingProduct);
     setEditingProduct(null);
   };
 
   const handleToggleProductStatus = (productId: string) => {
-    saveCatalog(
-      productList.map((p) =>
-        p.id === productId
-          ? { ...p, status: p.status === "published" ? ("draft" as const) : ("published" as const) }
-          : p
-      )
-    );
+    const p = productList.find((x) => x.id === productId);
+    if (!p) return;
+    void backend.saveProduct({ ...p, status: p.status === "published" ? "draft" : "published" });
   };
 
   const handleDeleteProduct = (productId: string) => {
     if (confirm("Archive this footwear product? It will disappear from the storefront (you can restore it later).")) {
-      saveCatalog(productList.filter((p) => p.id !== productId));
+      void backend.archiveProduct(productId);
     }
   };
 
@@ -115,8 +114,8 @@ export default function AdminPage() {
     if (!name) return;
 
     // Collision-proof id and slug (ids/slugs of archived products stay reserved)
-    const takenIds = new Set([...PRODUCTS.map((p) => p.id), ...productList.map((p) => p.id)]);
-    const takenSlugs = new Set([...PRODUCTS.map((p) => p.slug), ...productList.map((p) => p.slug)]);
+    const takenIds = backend.reservedIds();
+    const takenSlugs = backend.reservedSlugs();
     let n = takenIds.size + 1;
     while (takenIds.has("drun-" + String(n).padStart(2, "0"))) n++;
     const newId = "drun-" + String(n).padStart(2, "0");
@@ -170,7 +169,7 @@ export default function AdminPage() {
       returnPolicy: "14-day complimentary size exchange in original luxury box."
     };
 
-    saveCatalog([created, ...productList]);
+    void backend.createProduct(created);
     setNewProductForm({ ...newProductForm, name: "", sku: "", image: "" });
     setIsAddingNew(false);
   };
@@ -196,7 +195,7 @@ export default function AdminPage() {
     return true;
   });
 
-  if (!isAdmin && user?.role !== "admin") {
+  if (!authorized) {
     return (
       <main className="min-h-screen bg-[#031A16] text-[#F6F5F0] flex items-center justify-center p-6">
         <div className="w-full max-w-md bg-[#07100E] border border-white/10 rounded-3xl p-8 shadow-2xl text-center">
@@ -210,7 +209,9 @@ export default function AdminPage() {
             Drun Admin Console
           </h1>
           <p className="text-xs text-[#9EAAA4] mb-8 font-normal">
-            Enter the master administrator passkey to access inventory, catalog controls, orders, and sales telemetry.
+            {backend.remoteMode
+              ? "Sign in with your staff account to manage inventory, orders, and customer messages."
+              : "Enter the master administrator passkey to access inventory, catalog controls, orders, and sales telemetry."}
           </p>
 
           {authError && (
@@ -220,21 +221,36 @@ export default function AdminPage() {
           )}
 
           <form onSubmit={handleAdminAuth} className="space-y-4">
+            {backend.remoteMode && (
+              <div>
+                <input
+                  type="email"
+                  required
+                  autoComplete="username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Staff email"
+                  className="w-full bg-[#08231D] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder-[#9EAAA4] outline-none focus:border-[#FA9D60]"
+                />
+              </div>
+            )}
             <div>
               <input
                 type="password"
                 required
+                autoComplete={backend.remoteMode ? "current-password" : "off"}
                 value={passkey}
                 onChange={(e) => setPasskey(e.target.value)}
-                placeholder="Enter passkey (default: drun2026)"
+                placeholder={backend.remoteMode ? "Password" : "Enter passkey (default: drun2026)"}
                 className="w-full bg-[#08231D] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder-[#9EAAA4] outline-none focus:border-[#FA9D60]"
               />
             </div>
             <button
               type="submit"
-              className="btn-copper-pill w-full py-3.5 text-xs uppercase tracking-wider font-semibold"
+              disabled={signingIn}
+              className="btn-copper-pill w-full py-3.5 text-xs uppercase tracking-wider font-semibold disabled:opacity-60"
             >
-              Authenticate Admin
+              {signingIn ? "Signing in..." : backend.remoteMode ? "Sign In" : "Authenticate Admin"}
             </button>
           </form>
 
@@ -271,7 +287,7 @@ export default function AdminPage() {
               View Live Storefront &rarr;
             </Link>
             <button
-              onClick={logout}
+              onClick={handleSignOut}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-xs text-[#9EAAA4] hover:text-white transition-all"
             >
               <LogOut size={14} />
@@ -280,6 +296,20 @@ export default function AdminPage() {
           </div>
         </div>
       </header>
+
+      {(backend.error || backend.loading) && (
+        <div className="max-w-7xl mx-auto px-6 md:px-12 pt-6">
+          {backend.loading && <p className="text-xs text-[#9EAAA4]" role="status">Loading store data…</p>}
+          {backend.error && (
+            <div role="alert" className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-xs flex items-center justify-between gap-3">
+              <span>{backend.error}</span>
+              {backend.remoteMode && (
+                <button onClick={() => void backend.reload()} className="underline shrink-0">Retry</button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="pt-8 pb-20 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto">
         {/* Metric Cards (Real numbers from orders & catalog) */}
@@ -470,13 +500,13 @@ export default function AdminPage() {
               </div>
 
               <div className="flex items-center gap-3">
-                {archivedIds.length > 0 && (
+                {archivedCount > 0 && (
                   <button
-                    onClick={restoreArchivedProducts}
+                    onClick={() => void backend.restoreArchived()}
                     className="px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 border border-white/15 text-[#E9E8DF] hover:bg-white/10 transition-colors"
                   >
                     <RefreshCw size={14} />
-                    <span>Restore Archived ({archivedIds.length})</span>
+                    <span>Restore Archived ({archivedCount})</span>
                   </button>
                 )}
                 <button

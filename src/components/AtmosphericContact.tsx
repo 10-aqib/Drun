@@ -1,9 +1,8 @@
 "use client";
 
-import type { ContactMessage } from "@/lib/types";
 import React, { useState } from "react";
 import { Send, CheckCircle2, AlertCircle } from "lucide-react";
-import { readJson, writeJson } from "@/lib/localStore";
+import { sendContactMessage } from "@/lib/storeApi";
 
 export default function AtmosphericContact() {
   const [formData, setFormData] = useState({
@@ -27,28 +26,23 @@ export default function AtmosphericContact() {
     }
 
     setStatus("submitting");
-    try {
-      // Save message to localStorage and mock backend
-      writeJson("drun_messages", [
-        { id: "msg-" + Date.now(), ...formData, createdAt: new Date().toISOString() },
-        ...readJson<ContactMessage[]>("drun_messages", []),
-      ]);
-
-      setTimeout(() => {
-        setStatus("success");
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          subject: "Sizing & Bespoke Order",
-          message: "",
-          consent: true,
-        });
-      }, 700);
-    } catch {
+    const { consent: _consent, ...message } = formData;
+    void _consent;
+    const result = await sendContactMessage(message);
+    if (!result.ok) {
       setStatus("error");
-      setErrorMessage("An unexpected error occurred. Please try again.");
+      setErrorMessage(result.error);
+      return;
     }
+    setStatus("success");
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      subject: "Sizing & Bespoke Order",
+      message: "",
+      consent: true,
+    });
   };
 
   return (

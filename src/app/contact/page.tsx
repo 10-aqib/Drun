@@ -1,11 +1,10 @@
 "use client";
 
-import type { ContactMessage } from "@/lib/types";
 import React, { useState } from "react";
 import { Mail, Phone, MapPin, MessageCircle, Send, CheckCircle2, Clock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { readJson, writeJson } from "@/lib/localStore";
+import { sendContactMessage } from "@/lib/storeApi";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -17,15 +16,19 @@ export default function ContactPage() {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
 
-    writeJson("drun_messages", [
-      { id: "msg-" + Date.now(), ...formData, createdAt: new Date().toISOString() },
-      ...readJson<ContactMessage[]>("drun_messages", []),
-    ]);
-    setSubmitted(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim() || sending) return;
+
+    setSending(true);
+    setSendError("");
+    const result = await sendContactMessage(formData);
+    setSending(false);
+    if (result.ok) setSubmitted(true);
+    else setSendError(result.error);
   };
 
   return (
@@ -209,12 +212,19 @@ export default function ContactPage() {
                   />
                 </div>
 
+                {sendError && (
+                  <p role="alert" className="text-xs text-red-300 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+                    {sendError}
+                  </p>
+                )}
+
                 <button
                   type="submit"
-                  className="btn-copper-pill w-full py-4 text-sm font-semibold flex items-center justify-center gap-2"
+                  disabled={sending}
+                  className="btn-copper-pill w-full py-4 text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
                 >
                   <Send size={16} />
-                  <span>Transmit Inquiry</span>
+                  <span>{sending ? "Sending..." : "Transmit Inquiry"}</span>
                 </button>
               </form>
             )}
