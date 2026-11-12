@@ -2,7 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import {
+  ArrowRight
+} from "lucide-react";
 import { CRAFTSMANSHIP_POINTS } from "@/data/products";
 
 export default function DarkCraftsmanship() {

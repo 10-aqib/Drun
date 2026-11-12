@@ -1,20 +1,37 @@
 "use client";
 
-import React, { useEffect, useState, Suspense } from "react";
+import type { Order } from "@/lib/types";
+import React, {
+  useEffect,
+  Suspense
+} from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, Package, Truck, ArrowRight, ShieldCheck, Printer } from "lucide-react";
+import {
+  CheckCircle2,
+  Truck
+} from "lucide-react";
 import confetti from "canvas-confetti";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { safeJson, useStoredValue } from "@/lib/localStore";
+
+const ORDERS_KEY = "drun_orders";
+
+function parseOrders([raw]: (string | null)[]): Order[] {
+  const list = safeJson<unknown>(raw, []);
+  return Array.isArray(list) ? (list as Order[]) : [];
+}
 
 function OrderSuccessContent() {
   const searchParams = useSearchParams();
-  const orderId = searchParams.get("id") || "DRN-849201";
-  const [order, setOrder] = useState<any>(null);
+  const orderId = searchParams.get("id") || "";
+  const orders = useStoredValue([ORDERS_KEY], parseOrders);
+  const order = orderId ? orders.find((o) => o.id === orderId) ?? null : null;
 
   useEffect(() => {
-    // Trigger celebratory luxury confetti
+    // Celebrate only genuine orders
+    if (!order) return;
     try {
       confetti({
         particleCount: 80,
@@ -22,21 +39,29 @@ function OrderSuccessContent() {
         origin: { y: 0.6 },
         colors: ["#FA9D60", "#D88955", "#F8F7F3", "#08231D"],
       });
-    } catch (e) {
+    } catch {
       // ignore
     }
+  }, [order]);
 
-    // Retrieve order details from localStorage
-    try {
-      const orders = JSON.parse(localStorage.getItem("drun_orders") || "[]");
-      const found = orders.find((o: any) => o.id === orderId);
-      if (found) {
-        setOrder(found);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }, [orderId]);
+  if (!orderId) {
+    return (
+      <div className="pt-36 pb-24 px-6 text-center max-w-md mx-auto">
+        <h1 className="font-heading text-3xl font-bold text-white mb-3">No Order Selected</h1>
+        <p className="text-sm text-[#9EAAA4] mb-8">
+          Order confirmations appear here right after checkout. You can look up an existing order at any time.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link href="/track-order" className="btn-copper-pill px-8 py-3 text-sm font-semibold">
+            Track an Order
+          </Link>
+          <Link href="/shop" className="btn-ghost-luxury px-8 py-3 text-sm">
+            Continue Exploring
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-28 pb-24 px-4 sm:px-6 md:px-8 lg:px-12 max-w-4xl mx-auto">
@@ -57,7 +82,7 @@ function OrderSuccessContent() {
         </p>
 
         <div className="mt-6 inline-block px-5 py-2 rounded-full bg-[#07100E] border border-white/10 font-mono text-xs text-[#FA9D60]">
-          Order Reference: <span className="text-white font-bold">{orderId}</span>
+          Order Reference: <span className="text-white font-bold">{orderId || "—"}</span>
         </div>
       </div>
 
@@ -73,7 +98,9 @@ function OrderSuccessContent() {
           <div>
             <span className="text-xs text-[#9EAAA4]">Payment Method:</span>
             <div className="text-sm font-semibold text-[#FA9D60]">
-              {order ? order.customer.paymentMethod.toUpperCase() : "Cash on Delivery"}
+              {order
+                ? ({ cod: "Cash on Delivery", bank: "Bank Transfer", card: "Card" } as Record<string, string>)[order.customer?.paymentMethod ?? ""] ?? "—"
+                : "—"}
             </div>
           </div>
         </div>
@@ -103,7 +130,7 @@ function OrderSuccessContent() {
           <div className="pt-6 border-t border-white/10 space-y-4">
             <h3 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white">Itemized Receipt</h3>
             <div className="divide-y divide-white/5">
-              {order.items.map((item: any) => (
+              {order.items.map((item) => (
                 <div key={item.id} className="py-3 flex justify-between items-center text-xs sm:text-sm">
                   <div>
                     <span className="font-semibold text-white">{item.product.name}</span>
@@ -137,7 +164,7 @@ function OrderSuccessContent() {
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
         <Link
-          href={`/track-order?id=${orderId}`}
+          href={orderId ? `/track-order?id=${encodeURIComponent(orderId)}` : "/track-order"}
           className="btn-copper-pill px-8 py-3.5 text-xs uppercase tracking-widest flex items-center gap-2"
         >
           <Truck size={16} />

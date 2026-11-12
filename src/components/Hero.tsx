@@ -9,6 +9,8 @@ export default function Hero() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  // The canvas loop reads the pointer from a ref so it never restarts when the pointer moves.
+  const pointerRef = useRef({ x: 0, y: 0 });
 
   // Handle subtle playback rate for cinematic motion
   useEffect(() => {
@@ -25,15 +27,25 @@ export default function Hero() {
 
   // Handle pointer parallax
   useEffect(() => {
+    let frame = 0;
     const handleMouseMove = (e: MouseEvent) => {
       const { innerWidth, innerHeight } = window;
       const x = (e.clientX / innerWidth - 0.5) * 2; // -1 to 1
       const y = (e.clientY / innerHeight - 0.5) * 2;
-      setMousePos({ x, y });
+      pointerRef.current = { x, y };
+      if (!frame) {
+        frame = requestAnimationFrame(() => {
+          frame = 0;
+          setMousePos(pointerRef.current);
+        });
+      }
     };
 
     window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      cancelAnimationFrame(frame);
+    };
   }, []);
 
   // WebGL / Canvas Particle Monogram & Atmospheric dust
@@ -102,8 +114,8 @@ export default function Hero() {
       time += 0.015;
       ctx.clearRect(0, 0, width, height);
 
-      const mouseFactorX = mousePos.x * 25;
-      const mouseFactorY = mousePos.y * 20;
+      const mouseFactorX = pointerRef.current.x * 25;
+      const mouseFactorY = pointerRef.current.y * 20;
 
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
@@ -135,7 +147,7 @@ export default function Hero() {
       window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [mousePos]);
+  }, []);
 
   return (
     <section

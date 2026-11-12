@@ -1,7 +1,9 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { Product, PRODUCTS } from "@/data/products";
+import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { Product } from "@/data/products";
+import { useCatalog } from "@/lib/catalog";
+import { readStored, safeJson, useStoredValue, writeJson } from "@/lib/localStore";
 
 export interface CartItem {
   id: string; // unique key combining product id and size
@@ -26,98 +28,94 @@ interface CartContextType {
   closeCart: () => void;
 }
 
+const CART_KEY = "drun_cart";
+const WISHLIST_KEY = "drun_wishlist";
+
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [wishlist, setWishlist] = useState<string[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+function isCartItem(i: unknown): i is CartItem {
+  const item = i as CartItem;
+  return (
+    !!item &&
+    typeof item.id === "string" &&
+    typeof item.size === "number" &&
+    typeof item.quantity === "number" &&
+    item.quantity > 0 &&
+    !!item.product &&
+    typeof item.product.price === "number"
+  );
+}
 
-  // Load from localStorage on mount
-  useEffect(() => {
-    try {
-      const savedCart = localStorage.getItem("drun_cart");
-      if (savedCart) {
-        setCart(JSON.parse(savedCart));
-      }
-      const savedWishlist = localStorage.getItem("drun_wishlist");
-      if (savedWishlist) {
-        setWishlist(JSON.parse(savedWishlist));
-      }
-    } catch (e) {
-      console.error("Failed to load cart/wishlist from localStorage", e);
-    }
-    setIsLoaded(true);
+function parseCart([raw]: (string | null)[]): CartItem[] {
+  const list = safeJson<unknown[]>(raw, []);
+  return Array.isArray(list) ? list.filter(isCartItem) : [];
+}
+
+function parseWishlist([raw]: (string | null)[]): string[] {
+  const list = safeJson<unknown[]>(raw, []);
+  return Array.isArray(list) ? list.filter((id): id is string => typeof id === "string") : [];
+}
+
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const storedCart = useStoredValue([CART_KEY], parseCart);
+  const wishlist = useStoredValue([WISHLIST_KEY], parseWishlist);
+  const catalog = useCatalog();
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  // Always price/show items from the live catalogue so admin edits apply to bags.
+  const cart = useMemo(
+    () =>
+      storedCart.map((item) => ({
+        ...item,
+        product: catalog.find((p) => p.id === item.product.id) ?? item.product,
+      })),
+    [storedCart, catalog]
+  );
+
+  const addToCart = useCallback((product: Product, size: number, quantity: number = 1) => {
+    const itemKey = `${product.id}-${size}`;
+    const prev = parseCart([readStored(CART_KEY)]);
+    const existing = prev.find((item) => item.id === itemKey);
+    writeJson(
+      CART_KEY,
+      existing
+        ? prev.map((item) =>
+            item.id === itemKey ? { ...item, quantity: item.quantity + quantity } : item
+          )
+        : [...prev, { id: itemKey, product, size, quantity }]
+    );
+    setIsCartOpen(true);
   }, []);
 
-  // Save to localStorage
-  useEffect(() => {
-    if (!isLoaded) return;
-    try {
-      localStorage.setItem("drun_cart", JSON.stringify(cart));
-      localStorage.setItem("drun_wishlist", JSON.stringify(wishlist));
-    } catch (e) {
-      console.error("Failed to save cart/wishlist to localStorage", e);
-    }
-  }, [cart, wishlist, isLoaded]);
+  const removeFromCart = useCallback((itemId: string) => {
+    const prev = parseCart([readStored(CART_KEY)]);
+    writeJson(CART_KEY, prev.filter((item) => item.id !== itemId));
+  }, []);
 
-  const addToCart = (product: Product, size: number, quantity: number = 1) => {
-    const itemKey = `${product.id}-${size}`;
-    setCart((prev) => {
-      const existing = prev.find((item) => item.id === itemKey);
-      if (existing) {
-        return prev.map((item) =>
-          item.id === itemKey
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      } else {
-        return [...prev, { id: itemKey, product, size, quantity }];
-      }
-    });
-    setIsCartOpen(true);
-  };
-
-  const removeFromCart = (itemId: string) => {
-    setCart((prev) => prev.filter((item) => item.id !== itemId));
-  };
-
-  const updateQuantity = (itemId: string, delta: number) => {
-    setCart((prev) =>
+  const updateQuantity = useCallback((itemId: string, delta: number) => {
+    const prev = parseCart([readStored(CART_KEY)]);
+    writeJson(
+      CART_KEY,
       prev
-        .map((item) => {
-          if (item.id === itemId) {
-            const newQty = item.quantity + delta;
-            return newQty > 0 ? { ...item, quantity: newQty } : null;
-          }
-          return item;
-        })
-        .filter(Boolean) as CartItem[]
+        .map((item) => (item.id === itemId ? { ...item, quantity: item.quantity + delta } : item))
+        .filter((item) => item.quantity > 0)
     );
-  };
+  }, []);
 
-  const clearCart = () => {
-    setCart([]);
-  };
+  const clearCart = useCallback(() => writeJson(CART_KEY, []), []);
 
-  const toggleWishlist = (productId: string) => {
-    setWishlist((prev) =>
-      prev.includes(productId)
-        ? prev.filter((id) => id !== productId)
-        : [...prev, productId]
+  const toggleWishlist = useCallback((productId: string) => {
+    const prev = parseWishlist([readStored(WISHLIST_KEY)]);
+    writeJson(
+      WISHLIST_KEY,
+      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId]
     );
-  };
+  }, []);
 
-  const isInWishlist = (productId: string) => {
-    return wishlist.includes(productId);
-  };
+  const isInWishlist = useCallback((productId: string) => wishlist.includes(productId), [wishlist]);
 
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
-  const cartTotal = cart.reduce(
-    (acc, item) => acc + item.product.price * item.quantity,
-    0
-  );
+  const cartTotal = cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
 
   return (
     <CartContext.Provider

@@ -1,0 +1,218 @@
+[
+ {
+  "id": "drun-06",
+  "slug": "traditional-saddle-brown",
+  "style": "classic",
+  "color": "#7B3F00",
+  "name": "The Traditional Saddle Brown",
+  "leather": "Full-Grain Crust Vegetable-Tanned Bovine Leather",
+  "colorName": "Saddle Rust Brown"
+ },
+ {
+  "id": "drun-07",
+  "slug": "classic-noir-formal",
+  "style": "classic",
+  "color": "#181818",
+  "name": "The Classic Noir Formal",
+  "leather": "Aniline Glazed Calfskin with Natural Sheen",
+  "colorName": "Deep Obsidian Black"
+ },
+ {
+  "id": "drun-08",
+  "slug": "dark-chocolate-bark",
+  "style": "classic",
+  "color": "#3D2314",
+  "name": "The Dark Chocolate Bark",
+  "leather": "Oil-Stuffed Pull-Up Cowhide with Dark Wax Finish",
+  "colorName": "Dark Chocolate Espresso"
+ },
+ {
+  "id": "drun-09",
+  "slug": "artisan-tan-minimalist",
+  "style": "classic",
+  "color": "#C18A49",
+  "name": "The Artisan Tan Minimalist",
+  "leather": "Vegetable-Tanned Raw-Grain Crust Leather",
+  "colorName": "Golden Ochre Tan"
+ },
+ {
+  "id": "drun-10",
+  "slug": "charsadda-heritage-ochre",
+  "style": "classic",
+  "color": "#A0522D",
+  "name": "The Charsadda Heritage Ochre",
+  "leather": "Full-Grain Drum-Dyed Bovine Hide",
+  "colorName": "Warm Amber Ochre"
+ },
+ {
+  "id": "drun-11",
+  "slug": "governor-formal-burnished",
+  "style": "classic",
+  "color": "#4A150D",
+  "name": "The Governor Formal Burnished",
+  "leather": "Hand-Patinated Crust Calfskin with Antique Gradient",
+  "colorName": "Burnished Mahogany"
+ },
+ {
+  "id": "drun-12",
+  "slug": "kaptaan-rustique-brown",
+  "style": "kaptaan",
+  "color": "#5C3317",
+  "name": "The Kaptaan Rustique Brown",
+  "leather": "Heavy-Gauge Vegetable Pull-Up Leather",
+  "colorName": "Rich Tobacco Brown"
+ },
+ {
+  "id": "drun-13",
+  "slug": "kaptaan-midnight-shadow",
+  "style": "kaptaan",
+  "color": "#111111",
+  "name": "The Kaptaan Midnight Shadow",
+  "leather": "Milled Black Top-Grain Cowhide with Subtle Pebble Grain",
+  "colorName": "Matte Pitch Black"
+ },
+ {
+  "id": "drun-14",
+  "slug": "kaptaan-desert-sand-tan",
+  "style": "kaptaan",
+  "color": "#B38B59",
+  "name": "The Kaptaan Desert Sand Tan",
+  "leather": "Smooth Natural Veg-Tan Cowhide with Oil Pull-Up",
+  "colorName": "Sand Dune Tan"
+ },
+ {
+  "id": "drun-15",
+  "slug": "kaptaan-textured-granary",
+  "style": "kaptaan",
+  "color": "#4E3629",
+  "name": "The Kaptaan Textured Granary",
+  "leather": "Scotch-Grain Textured Bovine Leather with Moisture Barrier",
+  "colorName": "Vintage Walnut"
+ },
+ {
+  "id": "drun-16",
+  "slug": "kaptaan-dark-chocolate",
+  "style": "kaptaan",
+  "color": "#2E1810",
+  "name": "The Kaptaan Dark Chocolate",
+  "leather": "Deep-Waxed Oily Pull-Up Leather",
+  "colorName": "Bitter Chocolate"
+ },
+ {
+  "id": "drun-17",
+  "slug": "kaptaan-imperial-stitched",
+  "style": "kaptaan",
+  "color": "#421217",
+  "name": "The Kaptaan Imperial Stitched",
+  "leather": "Glazed Deep Cordovan-Tone Calfskin",
+  "colorName": "Oxblood Cordovan"
+ },
+ {
+  "id": "drun-18",
+  "slug": "quetta-norozi-chestnut",
+  "style": "norozi",
+  "color": "#8B4513",
+  "name": "The Quetta Norozi Chestnut",
+  "leather": "Heavy 3mm Vegetable-Tanned Bovine Hide",
+  "colorName": "Chestnut Copper"
+ },
+ {
+  "id": "drun-19",
+  "slug": "norozi-onyx-shadow",
+  "style": "norozi",
+  "color": "#161616",
+  "name": "The Norozi Onyx Shadow",
+  "leather": "Full-Grain Black Steerhide with Semi-Gloss Finish",
+  "colorName": "Raven Onyx"
+ },
+ {
+  "id": "drun-20",
+  "slug": "norozi-camel-suede",
+  "style": "norozi",
+  "color": "#C29B68",
+  "name": "The Norozi Camel Suede",
+  "leather": "Heavy-Nap Roughout Suede with Full-Grain Leather Core",
+  "colorName": "Camel Dune"
+ },
+ {
+  "id": "drun-21",
+  "slug": "norozi-oxblood-saddle",
+  "style": "norozi",
+  "color": "#5B1E1E",
+  "name": "The Norozi Oxblood Saddle",
+  "leather": "Oil-Tanned Pull-Up Cowhide with Deep Burgundy Undertones",
+  "colorName": "Vintage Oxblood"
+ },
+ {
+  "id": "drun-22",
+  "slug": "norozi-raw-tyre-welt-espresso",
+  "style": "norozi",
+  "color": "#2A1810",
+  "name": "The Norozi Raw Tyre-Welt Espresso",
+  "leather": "Vegetable-Tanned Thick Crust Cowhide with Raw Burnished Edges",
+  "colorName": "Espresso Brown"
+ },
+ {
+  "id": "drun-23",
+  "slug": "norozi-ceremonial-brass",
+  "style": "norozi",
+  "color": "#6B3410",
+  "name": "The Norozi Ceremonial Brass",
+  "leather": "Top-Grade European Calfskin Hand-Finished with Beeswax",
+  "colorName": "Royal Antique Chestnut"
+ },
+ {
+  "id": "drun-24",
+  "slug": "modern-charsadda-slate",
+  "style": "modern",
+  "color": "#353839",
+  "name": "The Modern Charsadda Slate",
+  "leather": "Matte Velour Nubuck Calfskin with Water-Repellent Coating",
+  "colorName": "Slate Charcoal"
+ },
+ {
+  "id": "drun-25",
+  "slug": "dual-tone-cognac-charcoal",
+  "style": "modern",
+  "color": "#8B4513",
+  "name": "The Dual-Tone Cognac & Charcoal",
+  "leather": "Combination Full-Grain Cognac Pull-Up and Dark Slate Bridle Leather",
+  "colorName": "Cognac & Slate"
+ },
+ {
+  "id": "drun-26",
+  "slug": "minimalist-monolith-tan",
+  "style": "modern",
+  "color": "#C49B71",
+  "name": "The Minimalist Monolith Tan",
+  "leather": "Unlined Vegetable-Tanned Italian Calfskin",
+  "colorName": "Biscuit Tan"
+ },
+ {
+  "id": "drun-27",
+  "slug": "urban-slipstream-black",
+  "style": "modern",
+  "color": "#121212",
+  "name": "The Urban Slipstream Black",
+  "leather": "Semi-Matte Micro-Grain Nappa Leather",
+  "colorName": "Pitch Obsidian"
+ },
+ {
+  "id": "drun-28",
+  "slug": "heritage-olive-nubuck",
+  "style": "modern",
+  "color": "#555D50",
+  "name": "The Heritage Olive Nubuck",
+  "leather": "Brushed European Velour Nubuck with Scotchgard Guard",
+  "colorName": "Muted Olive Field"
+ },
+ {
+  "id": "drun-29",
+  "slug": "signature-gala-velvet-calf",
+  "style": "modern",
+  "color": "#1B263B",
+  "name": "The Signature Gala Velvet & Calf",
+  "leather": "Deep Midnight Navy Italian Velvet with Black Patent Calf Trim",
+  "colorName": "Midnight Navy & Black"
+ }
+]

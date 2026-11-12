@@ -2,7 +2,6 @@
 
 import React from "react";
 import Link from "next/link";
-import { Sparkles, Shield, HeartHandshake, Scissors, Ruler, ShieldCheck } from "lucide-react";
 
 export default function BrandHeritage() {
   const brandPillars = [
@@ -14,7 +13,7 @@ export default function BrandHeritage() {
   ];
 
   return (
-    <section className="relative z-30 px-4 sm:px-6 md:px-8 lg:px-12 py-16 sm:py-20 lg:py-24">
+    <section id="heritage" className="scroll-mt-20 relative z-30 px-4 sm:px-6 md:px-8 lg:px-12 py-16 sm:py-20 lg:py-24">
       {/* Warm-White Editorial Panel */}
       <div className="max-w-7xl mx-auto bg-[#F8F7F3] text-[#101412] rounded-3xl lg:rounded-[36px] shadow-2xl p-6 sm:p-10 lg:p-14 border border-[#E9E8DF] relative overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-12 sm:mb-16">

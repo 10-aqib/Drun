@@ -7,25 +7,26 @@ import {
   SlidersHorizontal,
   Heart,
   ShoppingBag,
-  ArrowUpRight,
   Search,
   Check,
-  RotateCcw,
-  Sparkles,
-  Camera,
-  Eye
+  RotateCcw
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { PRODUCTS, Product, formatPKR } from "@/data/products";
+import { Product, formatPKR } from "@/data/products";
 import { useCart } from "@/context/CartContext";
+import { collectionCount, collectionSlug, inCollection, useCatalog } from "@/lib/catalog";
 
-function ShopContent() {
-  const searchParams = useSearchParams();
-  const initialCategory = searchParams.get("category") || "All";
-  const initialFilter = searchParams.get("filter") || "";
-  const initialQuery = searchParams.get("q") || "";
-
+function ShopContent({
+  initialCategory,
+  initialFilter,
+  initialQuery,
+}: {
+  initialCategory: string;
+  initialFilter: string;
+  initialQuery: string;
+}) {
+  const catalog = useCatalog();
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>("All");
@@ -39,32 +40,22 @@ function ShopContent() {
   const { addToCart, toggleWishlist, isInWishlist } = useCart();
 
   const collections = [
-    { label: "All Collections", value: "All" },
-    { label: "Classic Peshawari", value: "Classic Peshawari", slug: "classic" },
-    { label: "Kaptaan Style", value: "Kaptaan Style", slug: "kaptaan" },
-    { label: "Norozi Style", value: "Norozi Style", slug: "norozi" },
-    { label: "Modern & Signature", value: "Modern & Signature", slug: "modern" },
+    { label: "All Collections", value: "all" },
+    { label: "Classic Peshawari", value: "classic" },
+    { label: "Kaptaan Style", value: "kaptaan" },
+    { label: "Norozi Style", value: "norozi" },
+    { label: "Modern & Signature", value: "modern" },
   ];
+  const verifiedCount = catalog.filter((p) => p.photoStatus === "verified").length;
+  const isWishlistView = initialFilter === "wishlist";
 
   const allSizes = [39, 40, 41, 42, 43, 44, 45, 46];
   const colorFamilies = ["All", "Brown", "Black", "Tan", "Chocolate", "Olive", "Oxblood", "Navy"];
 
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter((p) => {
+    return catalog.filter((p) => {
       // Category match
-      if (selectedCategory !== "All") {
-        const catLow = selectedCategory.toLowerCase();
-        const matchesCategory =
-          p.category.toLowerCase() === catLow ||
-          p.categorySlug === catLow ||
-          (catLow === "classic" && (p.category.includes("Classic") || p.categorySlug === "classic")) ||
-          (catLow === "kaptaan" && (p.category.includes("Kaptaan") || p.categorySlug === "kaptaan")) ||
-          (catLow === "norozi" && (p.category.includes("Norozi") || p.categorySlug === "norozi")) ||
-          (catLow === "modern" && (p.category.includes("Modern") || p.categorySlug === "modern")) ||
-          (catLow === "heritage" && (p.categorySlug === "classic" || p.categorySlug === "norozi" || p.category === "Heritage")) ||
-          (catLow === "contemporary" && (p.categorySlug === "modern" || p.category === "Contemporary"));
-        if (!matchesCategory) return false;
-      }
+      if (!inCollection(p, selectedCategory)) return false;
 
       // Size match
       if (selectedSize && !p.sizes.includes(selectedSize)) return false;
@@ -86,7 +77,7 @@ function ShopContent() {
       if (availabilityFilter === "verified-photo" && p.photoStatus !== "verified") return false;
 
       // Wishlist match
-      if (initialFilter === "wishlist" && !isInWishlist(p.id)) return false;
+      if (isWishlistView && !isInWishlist(p.id)) return false;
 
       // Search match
       if (searchQuery.trim()) {
@@ -111,6 +102,7 @@ function ShopContent() {
       return 0; // featured default
     });
   }, [
+    catalog,
     selectedCategory,
     selectedSize,
     selectedPriceRange,
@@ -118,7 +110,7 @@ function ShopContent() {
     availabilityFilter,
     searchQuery,
     sortBy,
-    initialFilter,
+    isWishlistView,
     isInWishlist
   ]);
 
@@ -132,7 +124,7 @@ function ShopContent() {
   };
 
   const resetAllFilters = () => {
-    setSelectedCategory("All");
+    setSelectedCategory("all");
     setSelectedSize(null);
     setSelectedPriceRange("All");
     setSelectedColor("All");
@@ -142,7 +134,7 @@ function ShopContent() {
   };
 
   const isFiltered =
-    selectedCategory !== "All" ||
+    selectedCategory !== "all" ||
     selectedSize !== null ||
     selectedPriceRange !== "All" ||
     selectedColor !== "All" ||
@@ -160,9 +152,21 @@ function ShopContent() {
           Handcrafted Footwear<span className="text-[#FA9D60]">.</span>
         </h1>
         <p className="mt-4 text-sm sm:text-base text-[#9EAAA4] font-normal max-w-xl mx-auto leading-relaxed">
-          Explore our complete collection of 29 authentic Peshawari chappals, including traditional heritage cuts, Kaptaan square toes, Norozi double welts, and contemporary silhouettes.
+          Explore our complete collection of {catalog.length} authentic Peshawari chappals, including traditional heritage cuts, Kaptaan square toes, Norozi double welts, and contemporary silhouettes.
         </p>
       </div>
+
+      {isWishlistView && (
+        <div className="mb-8 -mt-6 flex flex-wrap items-center justify-center gap-3 text-xs text-[#E9E8DF]">
+          <span className="px-3 py-1.5 rounded-full bg-[#FA9D60]/15 border border-[#FA9D60]/30 text-[#FA9D60] font-semibold flex items-center gap-1.5">
+            <Heart size={12} fill="currentColor" />
+            Showing your wishlist
+          </span>
+          <Link href="/shop" className="underline underline-offset-4 hover:text-[#FA9D60]">
+            View the full catalogue
+          </Link>
+        </div>
+      )}
 
       {/* Interactive Filter & Control Dashboard */}
       <div className="bg-[#07100E] border border-white/10 rounded-3xl p-6 sm:p-8 mb-12 shadow-2xl space-y-6">
@@ -228,6 +232,9 @@ function ShopContent() {
               }`}
             >
               {cat.label}
+              <span className="ml-1.5 font-mono text-[10px] opacity-60">
+                {collectionCount(catalog, cat.value)}
+              </span>
             </button>
           ))}
         </div>
@@ -312,7 +319,7 @@ function ShopContent() {
               className="w-full bg-[#08231D] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-[#FA9D60]"
             >
               <option value="All">All Catalog Records</option>
-              <option value="verified-photo">Verified Studio Photos (5)</option>
+              <option value="verified-photo">Verified Studio Photos ({verifiedCount})</option>
               <option value="in-stock">Ready to Dispatch Only</option>
             </select>
           </div>
@@ -326,10 +333,12 @@ function ShopContent() {
             <SlidersHorizontal size={24} />
           </div>
           <h3 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight mb-2 text-white">
-            No Footwear Matches Your Filters
+            {isWishlistView && !isFiltered ? "Your Wishlist is Empty" : "No Footwear Matches Your Filters"}
           </h3>
           <p className="text-sm text-[#9EAAA4] max-w-md mx-auto mb-6 font-normal">
-            We couldn&apos;t find any pairs matching your current combination of filters. Try clearing your search or expanding the price and size range.
+            {isWishlistView && !isFiltered
+              ? "Tap the heart on any pair to save it here for later."
+              : "We couldn't find any pairs matching your current combination of filters. Try clearing your search or expanding the price and size range."}
           </p>
           <button
             onClick={resetAllFilters}
@@ -482,12 +491,26 @@ function ShopContent() {
   );
 }
 
+function ShopRoute() {
+  const searchParams = useSearchParams();
+  // Re-mount when the URL changes (navbar search, wishlist link, collection links)
+  // so the filters always reflect the address bar.
+  return (
+    <ShopContent
+      key={searchParams.toString()}
+      initialCategory={collectionSlug(searchParams.get("category") || "") ?? "all"}
+      initialFilter={searchParams.get("filter") || ""}
+      initialQuery={searchParams.get("q") || ""}
+    />
+  );
+}
+
 export default function ShopPage() {
   return (
     <main className="min-h-screen bg-[#031A16] text-[#F6F5F0]">
       <Navbar />
       <Suspense fallback={<div className="pt-32 text-center text-[#9EAAA4]">Loading footwear atelier...</div>}>
-        <ShopContent />
+        <ShopRoute />
       </Suspense>
       <Footer />
     </main>

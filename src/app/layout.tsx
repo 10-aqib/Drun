@@ -28,6 +28,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://drun.pk"),
   title: "Drun. | Luxury Handcrafted Peshawari Footwear",
   description:
     "Crafted by tradition. Worn with distinction. Discover bespoke Peshawari footwear where timeless Pakistani craftsmanship meets contemporary elegance.",

@@ -2,19 +2,25 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Search, User, ShoppingBag, Heart, ChevronDown, Menu, X, ArrowRight } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { CATEGORIES } from "@/data/products";
+import { collectionCount, useCatalog } from "@/lib/catalog";
 
 function NavbarContent() {
   const pathname = usePathname();
+  const router = useRouter();
+  const catalog = useCatalog();
   const { cartCount, openCart, wishlist } = useCart();
   const { openAuthModal, user } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCollectionsOpen, setIsCollectionsOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // The menu is tied to the page it was opened on, so it closes itself on navigation.
+  const [mobileMenuPath, setMobileMenuPath] = useState<string | null>(null);
+  const isMobileMenuOpen = mobileMenuPath === pathname;
+  const setIsMobileMenuOpen = (open: boolean) => setMobileMenuPath(open ? pathname : null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -26,15 +32,12 @@ function NavbarContent() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu on page transition
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
-
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/shop?q=${encodeURIComponent(searchQuery.trim())}`;
+      router.push(`/shop?q=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery("");
     }
   };
 
@@ -104,7 +107,7 @@ function NavbarContent() {
                       >
                         <div className="font-semibold flex justify-between items-center">
                           <span>{cat.name}</span>
-                          <span className="text-[10px] text-[#FA9D60] font-mono">({cat.count})</span>
+                          <span className="text-[10px] text-[#FA9D60] font-mono">({collectionCount(catalog, cat.slug)})</span>
                         </div>
                         <div className="text-[10px] text-[#9EAAA4] normal-case line-clamp-1 mt-0.5">
                           {cat.description}
@@ -117,15 +120,19 @@ function NavbarContent() {
             </div>
 
             <Link
-              href="/#craftsmanship"
-              className="hover:text-[#FA9D60] transition-colors py-2"
+              href="/craftsmanship"
+              className={`hover:text-[#FA9D60] transition-colors py-2 ${
+                pathname === "/craftsmanship" ? "text-[#FA9D60]" : ""
+              }`}
             >
               Craftsmanship
             </Link>
 
             <Link
-              href="/#heritage"
-              className="hover:text-[#FA9D60] transition-colors py-2"
+              href="/our-story"
+              className={`hover:text-[#FA9D60] transition-colors py-2 ${
+                pathname === "/our-story" ? "text-[#FA9D60]" : ""
+              }`}
             >
               Our Story
             </Link>
@@ -272,14 +279,14 @@ function NavbarContent() {
                 <ArrowRight size={16} className="text-[#FA9D60]" />
               </Link>
               <Link
-                href="/#craftsmanship"
+                href="/craftsmanship"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="hover:text-[#FA9D60] transition-colors py-1"
               >
                 Craftsmanship
               </Link>
               <Link
-                href="/#heritage"
+                href="/our-story"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="hover:text-[#FA9D60] transition-colors py-1"
               >
@@ -293,7 +300,7 @@ function NavbarContent() {
                 Size Guide & Fit
               </Link>
               <Link
-                href="/#contact"
+                href="/contact"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="hover:text-[#FA9D60] transition-colors py-1"
               >

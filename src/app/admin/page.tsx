@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import type { ContactMessage, Order } from "@/lib/types";
+import React, { useState } from "react";
 import Link from "next/link";
 import {
-  Shield,
   Package,
   ShoppingBag,
   Users,
@@ -12,20 +12,25 @@ import {
   Lock,
   LogOut,
   Edit2,
-  Check,
-  Eye,
   RefreshCw,
   Search,
-  CheckCircle2,
-  Clock,
-  Truck,
   Plus,
-  Trash2,
-  Camera,
-  Filter
+  Trash2
 } from "lucide-react";
 import { PRODUCTS, Product, formatPKR } from "@/data/products";
+import { ARCHIVED_KEY, restoreArchivedProducts, saveCatalog, useCatalog } from "@/lib/catalog";
+import { safeJson, useStoredValue, writeJson } from "@/lib/localStore";
+import { isValidAdminPasskey } from "@/lib/adminAuth";
 import { useAuth } from "@/context/AuthContext";
+
+const ORDERS_KEY = "drun_orders";
+const MESSAGES_KEY = "drun_messages";
+const NEWSLETTER_KEY = "drun_newsletter";
+
+function parseList<T>([raw]: (string | null)[]): T[] {
+  const list = safeJson<unknown>(raw, []);
+  return Array.isArray(list) ? (list as T[]) : [];
+}
 
 export default function AdminPage() {
   const { user, login, logout, isAdmin } = useAuth();
@@ -33,11 +38,13 @@ export default function AdminPage() {
   const [authError, setAuthError] = useState("");
   const [activeTab, setActiveTab] = useState<"orders" | "products" | "messages" | "subscribers">("orders");
 
-  // Local state for managed products, orders, and messages
-  const [productList, setProductList] = useState<Product[]>(PRODUCTS);
-  const [orders, setOrders] = useState<any[]>([]);
-  const [messages, setMessages] = useState<any[]>([]);
-  const [subscribers, setSubscribers] = useState<string[]>([]);
+  // Live store data (shared with the storefront through localStorage)
+  const productList = useCatalog();
+  const orders = useStoredValue([ORDERS_KEY], parseList<Order>);
+  const messages = useStoredValue([MESSAGES_KEY], parseList<ContactMessage>);
+  const subscribers = useStoredValue([NEWSLETTER_KEY], parseList<string>);
+  const archivedIds = useStoredValue([ARCHIVED_KEY], parseList<string>);
+
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [productFilter, setProductFilter] = useState<"all" | "published" | "draft">("all");
@@ -59,50 +66,12 @@ export default function AdminPage() {
     soleType: "Hand-Cut Tyre Tread Sole",
     status: "draft",
     photoStatus: "awaiting_studio_assets",
+    image: "",
   });
-
-  // Load persisted store data
-  const loadStoreData = () => {
-    try {
-      // Orders
-      const savedOrders = JSON.parse(localStorage.getItem("drun_orders") || "[]");
-      setOrders(savedOrders);
-
-      // Messages
-      const savedMessages = JSON.parse(localStorage.getItem("drun_messages") || "[]");
-      setMessages(savedMessages);
-
-      // Newsletter
-      const savedNewsletter = JSON.parse(localStorage.getItem("drun_newsletter") || "[]");
-      setSubscribers(savedNewsletter);
-
-      // Products override with merge to ensure all 29 items are available
-      const savedProducts = localStorage.getItem("drun_managed_products");
-      if (savedProducts) {
-        const parsed: Product[] = JSON.parse(savedProducts);
-        const merged = PRODUCTS.map((p) => {
-          const override = parsed.find((o) => o.id === p.id);
-          return override ? { ...p, ...override } : p;
-        });
-        // Include any newly custom-created products from admin
-        const customAdded = parsed.filter((p) => !PRODUCTS.some((base) => base.id === p.id));
-        setProductList([...merged, ...customAdded]);
-      } else {
-        setProductList(PRODUCTS);
-      }
-    } catch (e) {
-      console.error(e);
-      setProductList(PRODUCTS);
-    }
-  };
-
-  useEffect(() => {
-    loadStoreData();
-  }, []);
 
   const handleAdminAuth = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passkey === "drun2026" || passkey === "admin" || passkey.toLowerCase() === "drun") {
+    if (isValidAdminPasskey(passkey)) {
       login("admin@drun.pk", "Master Cobbler & Admin", "admin");
       setAuthError("");
     } else {
@@ -111,66 +80,69 @@ export default function AdminPage() {
   };
 
   const handleUpdateOrderStatus = (orderId: string, newStatus: string) => {
-    const updated = orders.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o));
-    setOrders(updated);
-    localStorage.setItem("drun_orders", JSON.stringify(updated));
+    writeJson(
+      ORDERS_KEY,
+      orders.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
+    );
   };
 
   const handleSaveProductEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
-    const updated = productList.map((p) =>
-      p.id === editingProduct.id ? editingProduct : p
-    );
-    setProductList(updated);
-    localStorage.setItem("drun_managed_products", JSON.stringify(updated));
+    saveCatalog(productList.map((p) => (p.id === editingProduct.id ? editingProduct : p)));
     setEditingProduct(null);
   };
 
   const handleToggleProductStatus = (productId: string) => {
-    const updated = productList.map((p) => {
-      if (p.id === productId) {
-        const nextStatus = p.status === "published" ? "draft" : "published";
-        return { ...p, status: nextStatus as "published" | "draft" };
-      }
-      return p;
-    });
-    setProductList(updated);
-    localStorage.setItem("drun_managed_products", JSON.stringify(updated));
+    saveCatalog(
+      productList.map((p) =>
+        p.id === productId
+          ? { ...p, status: p.status === "published" ? ("draft" as const) : ("published" as const) }
+          : p
+      )
+    );
   };
 
   const handleDeleteProduct = (productId: string) => {
-    if (confirm("Are you sure you want to archive this footwear product from the catalogue?")) {
-      const updated = productList.filter((p) => p.id !== productId);
-      setProductList(updated);
-      localStorage.setItem("drun_managed_products", JSON.stringify(updated));
+    if (confirm("Archive this footwear product? It will disappear from the storefront (you can restore it later).")) {
+      saveCatalog(productList.filter((p) => p.id !== productId));
     }
   };
 
   const handleCreateNewProduct = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newProductForm.name) return;
+    const name = newProductForm.name?.trim();
+    if (!name) return;
 
-    const newId = "drun-" + (productList.length + 1).toString().padStart(2, "0");
-    const slug = newProductForm.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    // Collision-proof id and slug (ids/slugs of archived products stay reserved)
+    const takenIds = new Set([...PRODUCTS.map((p) => p.id), ...productList.map((p) => p.id)]);
+    const takenSlugs = new Set([...PRODUCTS.map((p) => p.slug), ...productList.map((p) => p.slug)]);
+    let n = takenIds.size + 1;
+    while (takenIds.has("drun-" + String(n).padStart(2, "0"))) n++;
+    const newId = "drun-" + String(n).padStart(2, "0");
+    const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || newId;
+    let slug = baseSlug;
+    for (let i = 2; takenSlugs.has(slug); i++) slug = `${baseSlug}-${i}`;
+
+    const image = newProductForm.image?.trim() || "/products/charsadda-modern-black.png";
     const created: Product = {
       id: newId,
       sku: newProductForm.sku || `DRN-NEW-${Math.floor(100 + Math.random() * 900)}`,
-      name: newProductForm.name,
-      slug: slug,
+      name,
+      slug,
       tagline: newProductForm.tagline || "Handcrafted luxury Peshawari chappal",
-      category: (newProductForm.category as any) || "Classic Peshawari",
-      categorySlug: (newProductForm.categorySlug as any) || "classic",
+      category: newProductForm.category || "Classic Peshawari",
+      categorySlug: newProductForm.categorySlug || "classic",
       brand: "Drun.",
       price: Number(newProductForm.price) || 14500,
-      originalPrice: Number(newProductForm.originalPrice) || 16000,
+      originalPrice: Number(newProductForm.originalPrice) || undefined,
       inStock: true,
       stockCount: Number(newProductForm.stockCount) || 10,
-      status: (newProductForm.status as any) || "draft",
-      photoStatus: (newProductForm.photoStatus as any) || "awaiting_studio_assets",
-      image: "/products/charsadda-modern-black.png",
-      additionalImages: ["/products/charsadda-modern-black.png"],
-      imageAlt: `${newProductForm.name} Benchmark Cut`,
+      status: newProductForm.status || "draft",
+      photoStatus: newProductForm.photoStatus || "awaiting_studio_assets",
+      image,
+      additionalImages: [image],
+      imageAlt: `${name} Benchmark Cut`,
       imageRights: "Drun. Authorized Merchandise",
       leatherType: newProductForm.leatherType || "Full-Grain Bovine Leather",
       soleType: newProductForm.soleType || "Hand-Cut Tyre Tread Sole",
@@ -198,9 +170,8 @@ export default function AdminPage() {
       returnPolicy: "14-day complimentary size exchange in original luxury box."
     };
 
-    const updated = [created, ...productList];
-    setProductList(updated);
-    localStorage.setItem("drun_managed_products", JSON.stringify(updated));
+    saveCatalog([created, ...productList]);
+    setNewProductForm({ ...newProductForm, name: "", sku: "", image: "" });
     setIsAddingNew(false);
   };
 
@@ -465,10 +436,10 @@ export default function AdminPage() {
                         Address: {order.customer.address}, {order.customer.city}, {order.customer.province}
                       </div>
                       <div className="text-[#9EAAA4]">
-                        Payment: {order.customer.paymentMethod.toUpperCase()}
+                        Payment: {(order.customer.paymentMethod ?? "n/a").toUpperCase()}
                       </div>
                       <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
-                        {order.items.map((item: any) => (
+                        {order.items.map((item) => (
                           <span
                             key={item.id}
                             className="px-2.5 py-1 rounded bg-[#07100E] text-white border border-white/10"
@@ -499,6 +470,15 @@ export default function AdminPage() {
               </div>
 
               <div className="flex items-center gap-3">
+                {archivedIds.length > 0 && (
+                  <button
+                    onClick={restoreArchivedProducts}
+                    className="px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 border border-white/15 text-[#E9E8DF] hover:bg-white/10 transition-colors"
+                  >
+                    <RefreshCw size={14} />
+                    <span>Restore Archived ({archivedIds.length})</span>
+                  </button>
+                )}
                 <button
                   onClick={() => setIsAddingNew(true)}
                   className="btn-copper-pill px-4 py-2 text-xs font-semibold flex items-center gap-1.5"
@@ -791,6 +771,19 @@ export default function AdminPage() {
                       />
                     </div>
 
+                    <div>
+                      <label className="block uppercase tracking-wider text-[#9EAAA4] mb-1">
+                        Image Path or URL
+                      </label>
+                      <input
+                        type="text"
+                        value={newProductForm.image ?? ""}
+                        onChange={(e) => setNewProductForm({ ...newProductForm, image: e.target.value })}
+                        placeholder="/products/your-image.png (optional)"
+                        className="w-full bg-[#08231D] border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-[#FA9D60]"
+                      />
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block uppercase tracking-wider text-[#9EAAA4] mb-1">
@@ -806,8 +799,8 @@ export default function AdminPage() {
                             else if (val.includes("Modern")) slug = "modern";
                             setNewProductForm({
                               ...newProductForm,
-                              category: val as any,
-                              categorySlug: slug as any,
+                              category: val as Product["category"],
+                              categorySlug: slug as Product["categorySlug"],
                             });
                           }}
                           className="w-full bg-[#08231D] border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-[#FA9D60]"

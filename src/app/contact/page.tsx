@@ -1,9 +1,11 @@
 "use client";
 
+import type { ContactMessage } from "@/lib/types";
 import React, { useState } from "react";
 import { Mail, Phone, MapPin, MessageCircle, Send, CheckCircle2, Clock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { readJson, writeJson } from "@/lib/localStore";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -19,13 +21,10 @@ export default function ContactPage() {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) return;
 
-    const existing = JSON.parse(localStorage.getItem("drun_messages") || "[]");
-    existing.unshift({
-      id: "msg-" + Date.now(),
-      ...formData,
-      createdAt: new Date().toISOString(),
-    });
-    localStorage.setItem("drun_messages", JSON.stringify(existing));
+    writeJson("drun_messages", [
+      { id: "msg-" + Date.now(), ...formData, createdAt: new Date().toISOString() },
+      ...readJson<ContactMessage[]>("drun_messages", []),
+    ]);
     setSubmitted(true);
   };
 

@@ -1,6 +1,9 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, {
+  useRef,
+  useState
+} from "react";
 import { Layers, Sparkles, Compass, Feather, History } from "lucide-react";
 
 export default function CraftsmanshipIdentity() {
@@ -37,6 +40,7 @@ export default function CraftsmanshipIdentity() {
 
   return (
     <section
+      id="craftsmanship"
       ref={containerRef}
       className="relative z-30 px-4 sm:px-6 md:px-8 lg:px-12 py-16 sm:py-20 lg:py-28 overflow-hidden bg-[#031A16]"
     >

@@ -3,13 +3,12 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { PRODUCTS, Product, formatPKR } from "@/data/products";
-import { useCart } from "@/context/CartContext";
+import { formatPKR } from "@/data/products";
+import { collectionSlug, inCollection, useCatalog } from "@/lib/catalog";
 
 export default function FeaturedCollection() {
+  const catalog = useCatalog();
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const { addToCart } = useCart();
-  const [addedItem, setAddedItem] = useState<string | null>(null);
 
   const categories = [
     "All",
@@ -19,27 +18,11 @@ export default function FeaturedCollection() {
     "Modern & Signature",
   ];
 
+  const slug = collectionSlug(selectedCategory) ?? "all";
   const filteredProducts =
-    selectedCategory === "All"
-      ? PRODUCTS.filter((p) => p.featured || p.isSignature || p.photoStatus === "verified").slice(0, 8)
-      : PRODUCTS.filter((p) => {
-          const catLow = selectedCategory.toLowerCase();
-          return (
-            p.category.toLowerCase() === catLow ||
-            (catLow.includes("classic") && p.category.includes("Classic")) ||
-            (catLow.includes("kaptaan") && p.category.includes("Kaptaan")) ||
-            (catLow.includes("norozi") && p.category.includes("Norozi")) ||
-            (catLow.includes("modern") && p.category.includes("Modern"))
-          );
-        }).slice(0, 8);
-
-  const handleQuickAdd = (e: React.MouseEvent, product: Product) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addToCart(product, 42, 1);
-    setAddedItem(product.id);
-    setTimeout(() => setAddedItem(null), 1500);
-  };
+    slug === "all"
+      ? catalog.filter((p) => p.featured || p.isSignature || p.photoStatus === "verified").slice(0, 8)
+      : catalog.filter((p) => inCollection(p, slug)).slice(0, 8);
 
   return (
     <section
@@ -295,7 +278,7 @@ export default function FeaturedCollection() {
             href="/shop"
             className="font-bold text-[#101412] hover:text-[#A56D47] inline-flex items-center gap-1.5 group shrink-0 transition-colors"
           >
-            <span>View Full 29-Footwear Catalogue</span>
+            <span>View Full {catalog.length}-Footwear Catalogue</span>
             <ArrowUpRight
               size={14}
               className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"

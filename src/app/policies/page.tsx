@@ -1,5 +1,4 @@
 import React from "react";
-import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -20,7 +19,7 @@ export default function PoliciesPage() {
 
         <div className="bg-[#07100E] border border-white/10 rounded-3xl p-6 sm:p-12 shadow-2xl space-y-10 sm:space-y-12 text-xs sm:text-sm text-[#9EAAA4] font-normal leading-relaxed">
           {/* Exchange Guarantee */}
-          <div>
+          <div id="exchange" className="scroll-mt-28">
             <h2 className="font-heading text-xl sm:text-2xl font-bold text-white mb-3">
               1. 14-Day Complimentary Size Exchange
             </h2>
@@ -37,7 +36,7 @@ export default function PoliciesPage() {
           </div>
 
           {/* Delivery & Cash on Delivery */}
-          <div>
+          <div id="delivery" className="scroll-mt-28">
             <h2 className="font-heading text-xl sm:text-2xl font-bold text-white mb-3">
               2. Cash on Delivery & Fulfillment Terms
             </h2>
@@ -52,7 +51,7 @@ export default function PoliciesPage() {
           </div>
 
           {/* Authentic Leather Guarantee */}
-          <div>
+          <div id="warranty" className="scroll-mt-28">
             <h2 className="font-heading text-xl sm:text-2xl font-bold text-white mb-3">
               3. Authentic Leather Warranty
             </h2>
@@ -64,7 +63,7 @@ export default function PoliciesPage() {
           </div>
 
           {/* Privacy */}
-          <div>
+          <div id="privacy" className="scroll-mt-28">
             <h2 className="font-heading text-xl sm:text-2xl font-bold text-white mb-3">
               4. Patron Privacy Protection
             </h2>
@@ -72,6 +71,35 @@ export default function PoliciesPage() {
               We respect your confidentiality. Contact information and delivery addresses are
               stored securely solely for fulfillment, courier logistics, and concierge customer
               support. We never share or sell patron records to third parties.
+            </p>
+          </div>
+
+          {/* Terms */}
+          <div id="terms" className="scroll-mt-28">
+            <h2 className="font-heading text-xl sm:text-2xl font-bold text-white mb-3">
+              5. Terms & Conditions
+            </h2>
+            <p className="mb-2">
+              By placing an order you confirm that the delivery details you provide are accurate and
+              that you are authorised to use the chosen payment method. Prices are listed in Pakistani
+              Rupees (PKR) and include standard express courier within Pakistan.
+            </p>
+            <p>
+              Every pair is hand-finished, so slight variations in grain, tone, and stitching are part
+              of its character and are not considered defects. Drun. may cancel and fully refund any
+              order that cannot be fulfilled as described.
+            </p>
+          </div>
+
+          {/* Cookies */}
+          <div id="cookies" className="scroll-mt-28">
+            <h2 className="font-heading text-xl sm:text-2xl font-bold text-white mb-3">
+              6. Cookies & Browser Storage
+            </h2>
+            <p>
+              This storefront does not use advertising cookies. Your shopping bag, wishlist, and sign-in
+              details are kept in your own browser&apos;s local storage so they are available when you
+              return. Clearing your browser data removes them.
             </p>
           </div>
         </div>
